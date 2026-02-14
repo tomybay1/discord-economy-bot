@@ -1,1 +1,1 @@
-{"token": "MTQ3MjI1MTIxNTQ4NzQzNDc1Mg.GEA3iq.x7GjFIpwZUYVNWlnW84Hatwe5ws0mlTCBtQdjI"}
+client.login(process.env.DISCORD_TOKEN);
