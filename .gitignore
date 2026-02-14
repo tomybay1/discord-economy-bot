@@ -1,0 +1,9 @@
+# Node.js dependencies
+node_modules/
+
+# Configuration files
+config.json
+.env
+
+# macOS system files
+.DS_Store
