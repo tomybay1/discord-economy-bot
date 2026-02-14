@@ -1,21 +1,21 @@
 require('dotenv').config();
-const { 
-  Client, 
-  GatewayIntentBits, 
-  EmbedBuilder, 
-  ActionRowBuilder, 
-  ButtonBuilder, 
-  ButtonStyle 
+const {
+  Client,
+  GatewayIntentBits,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle
 } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
-const client = new Client({ 
+const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent
-  ] 
+  ]
 });
 
 const ADMINS = ['1450544639621992579', '1292538951562821735'];
@@ -56,7 +56,8 @@ function rollChest() {
   for (const reward of CHEST_REWARDS) {
     cumulative += reward.chance;
     if (roll <= cumulative) {
-      const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
+      const amount =
+        Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
       return { rarity: reward.rarity, amount };
     }
   }
@@ -64,7 +65,7 @@ function rollChest() {
 
 client.once('ready', () => {
   loadEconomy();
-  console.log(`✅ Logged in as ${client.user.tag}`);
+  console.log(`Logged in as ${client.user.tag}`);
 });
 
 client.on('messageCreate', async (message) => {
@@ -77,7 +78,9 @@ client.on('messageCreate', async (message) => {
 
   // Balance
   if (command === 'bal' || command === 'balance') {
-    return message.reply(`💰 Balance: **$${userData.balance}**\n📦 Chests: **${userData.chests}**`);
+    return message.reply(
+      `💰 Balance: **$${userData.balance}**\n📦 Chests: **${userData.chests}**`
+    );
   }
 
   // Daily
@@ -86,7 +89,9 @@ client.on('messageCreate', async (message) => {
     const cooldown = 24 * 60 * 60 * 1000;
 
     if (userData.lastDaily && now - userData.lastDaily < cooldown) {
-      const hours = Math.ceil((userData.lastDaily + cooldown - now) / 3600000);
+      const hours = Math.ceil(
+        (userData.lastDaily + cooldown - now) / 3600000
+      );
       return message.reply(`⏳ Come back in **${hours}h**.`);
     }
 
@@ -95,20 +100,30 @@ client.on('messageCreate', async (message) => {
     userData.lastDaily = now;
     saveEconomy();
 
-    return message.reply(`🎁 Daily claimed: **$${reward}**\n💰 Total: **$${userData.balance}**`);
+    return message.reply(
+      `🎁 Daily claimed: **$${reward}**\n💰 Total: **$${userData.balance}**`
+    );
   }
 
   // Buy Chest
   if (command === 'chest') {
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId('buy_confirm').setLabel('Confirm').setStyle(ButtonStyle.Success),
-      new ButtonBuilder().setCustomId('buy_cancel').setLabel('Cancel').setStyle(ButtonStyle.Danger)
+      new ButtonBuilder()
+        .setCustomId('buy_confirm')
+        .setLabel('Confirm')
+        .setStyle(ButtonStyle.Success),
+      new ButtonBuilder()
+        .setCustomId('buy_cancel')
+        .setLabel('Cancel')
+        .setStyle(ButtonStyle.Danger)
     );
 
     const embed = new EmbedBuilder()
       .setColor('#FFD700')
       .setTitle('🎁 Buy Chest')
-      .setDescription(`Cost: **$${CHEST_PRICE}**\n\nProceed with purchase?`);
+      .setDescription(
+        `Cost: **$${CHEST_PRICE}**\n\nThis chest contains random rarity rewards.\nProceed with purchase?`
+      );
 
     return message.reply({ embeds: [embed], components: [row] });
   }
@@ -119,13 +134,19 @@ client.on('messageCreate', async (message) => {
       return message.reply(`❌ You have no chests.`);
     }
 
-    const rarityInfo = CHEST_REWARDS
-      .map(r => `**${r.rarity}** — ${r.chance}%`)
-      .join('\n');
+    const rewardInfo = CHEST_REWARDS.map(r =>
+      `**${r.rarity}** (${r.chance}%) → $${r.min} - $${r.max}`
+    ).join('\n');
 
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId('open_confirm').setLabel('Yes, Open').setStyle(ButtonStyle.Success),
-      new ButtonBuilder().setCustomId('open_cancel').setLabel('Cancel').setStyle(ButtonStyle.Danger)
+      new ButtonBuilder()
+        .setCustomId('open_confirm')
+        .setLabel('Open Chest')
+        .setStyle(ButtonStyle.Success),
+      new ButtonBuilder()
+        .setCustomId('open_cancel')
+        .setLabel('Cancel')
+        .setStyle(ButtonStyle.Danger)
     );
 
     const embed = new EmbedBuilder()
@@ -133,8 +154,8 @@ client.on('messageCreate', async (message) => {
       .setTitle('📦 Open Chest')
       .setDescription(
         `You have **${userData.chests}** chest(s).\n\n` +
-        `🎲 Possible Rewards:\n${rarityInfo}\n\n` +
-        `Are you sure?`
+        `🎲 **Possible Rewards:**\n${rewardInfo}\n\n` +
+        `Are you sure you want to open one?`
       );
 
     return message.reply({ embeds: [embed], components: [row] });
@@ -179,16 +200,20 @@ client.on('interactionCreate', async (interaction) => {
 
   if (interaction.customId === 'buy_confirm') {
     if (userData.balance < CHEST_PRICE) {
-      return interaction.reply({ content: `❌ Not enough money.`, ephemeral: true });
+      return interaction.reply({
+        content: `❌ Not enough money.`,
+        ephemeral: true
+      });
     }
 
     userData.balance -= CHEST_PRICE;
     userData.chests += 1;
     saveEconomy();
 
-    return interaction.reply({ 
-      content: `✅ Chest purchased.\n💰 Balance: **$${userData.balance}**\n📦 Chests: **${userData.chests}**`,
-      ephemeral: true 
+    return interaction.reply({
+      content:
+        `✅ Chest purchased.\n💰 Balance: **$${userData.balance}**\n📦 Chests: **${userData.chests}**`,
+      ephemeral: true
     });
   }
 
@@ -198,7 +223,10 @@ client.on('interactionCreate', async (interaction) => {
 
   if (interaction.customId === 'open_confirm') {
     if (userData.chests <= 0) {
-      return interaction.reply({ content: `❌ No chests available.`, ephemeral: true });
+      return interaction.reply({
+        content: `❌ No chests available.`,
+        ephemeral: true
+      });
     }
 
     const result = rollChest();
